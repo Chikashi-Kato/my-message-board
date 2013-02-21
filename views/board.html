@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+ {% block content %}
+  <div class="hero-unit">
+    <h1 id="message">Hello world! This is HTML5 Boilerplate.</h1>
+  </div>
+	<span id="status"></span>
+ {% endblock %}
+ {% block script %}
+        <script>
+        $(function() {
+          connect_server();
+
+          setInterval(function() {
+            $.getJSON("/token/status/chuck", {}, function(json){
+              if( json.connected ){
+                $("#status").text("Connected");
+              }else{
+                connect_server();
+              }
+            });
+          }, 300000);
+        });
+
+        function connect_server(){
+          $.getJSON("/token/chuck", {}, function(json){
+            var channel = new goog.appengine.Channel(json.token);
+            var socket = channel.open();
+
+            socket.onopen = function (event) {
+              $("#status").text("Connected");
+            };
+
+            socket.onmessage = function (event) {
+              //alert(event.data);
+              var data = $.parseJSON(event.data);
+              $("#message").text(data.message);
+            };
+
+            socket.onclose = function(event) {
+              $("#status").text("Disconnected");
+            }
+          });
+        }
+        </script>
+ {% endblock %}

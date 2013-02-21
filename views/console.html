@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+ {% block content %}
+ <form method="POST" action="/message/chuck">
+   <input name="message" type="text">
+   <button type="submit">Submit</button>
+ </form>
+ {% endblock %}
+
+ {% block script %}
+ {% endblock %}
