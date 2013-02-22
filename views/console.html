@@ -1,10 +1,49 @@
 {% extends "base.html" %}
  {% block content %}
- <form method="POST" action="/message/chuck">
-   <input name="message" type="text">
-   <button type="submit">Submit</button>
+ <p>
+   Target Board: {{ boardname }}
+ </p>
+ <form id="message_form" class="form-inline" method="POST" action="/message/{{ boardname }}">
+   <input id="message" name="message" type="text" placeholder="Welcome to my cube!">
+   <button id="submit_button" class="btn btn-primary" type="submit">Submit</button>
  </form>
+ <p>
+   Current Message: <span id="current_message">{{ message }}</span>
+ </p>
+
+ <div id="templates">
+   <button class="btn">Welcome to my cube!</button>
+   <button class="btn">Restroom</button>
+   <button class="btn">Lunch</button>
+   <button class="btn">Coffee Break</button>
+   <button class="btn">Out of office</button>
+   <button class="btn">See you tomorrow</button>
+ </div>
+
  {% endblock %}
 
  {% block script %}
+	<script src="/assets/js/jquery.form.js"></script>
+  <script>
+  $(function (){
+    $("#templates > button").click(function() {
+      $("#message").val($(this).text());
+    });
+
+    $('#message_form').ajaxForm({
+      beforeSubmit: function() {
+        $("#submit_button").attr("disabled","disabled");
+      },
+      complete: function(xhr) {
+                  $("#submit_button").removeAttr("disabled");
+                  var resp = jQuery.parseJSON(xhr.responseText);
+                  if(resp.result){
+                    $("#current_message").text(resp.message);
+                  }else{
+                    alert(resp.message);
+                  }
+                }
+      });
+  });    
+  </script>
  {% endblock %}

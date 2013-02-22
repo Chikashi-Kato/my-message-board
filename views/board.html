@@ -1,7 +1,7 @@
 {% extends "base.html" %}
  {% block content %}
   <div class="hero-unit">
-    <h1 id="message">Hello world! This is HTML5 Boilerplate.</h1>
+    <h1 id="message"></h1>
   </div>
 	<span id="status"></span>
  {% endblock %}
@@ -11,7 +11,7 @@
           connect_server();
 
           setInterval(function() {
-            $.getJSON("/token/status/chuck", {}, function(json){
+            $.getJSON("/token/status/{{ boardname }}", {}, function(json){
               if( json.connected ){
                 $("#status").text("Connected");
               }else{
@@ -22,7 +22,7 @@
         });
 
         function connect_server(){
-          $.getJSON("/token/chuck", {}, function(json){
+          $.getJSON("/token/{{ boardname }}", {}, function(json){
             var channel = new goog.appengine.Channel(json.token);
             var socket = channel.open();
 

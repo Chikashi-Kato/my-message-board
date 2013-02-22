@@ -123,8 +123,9 @@ class DisconnectedHandler(webapp2.RequestHandler):
 class MessageHandler(webapp2.RequestHandler):
     def post(self, boardname):
         logging.info(boardname)
-        
-        result = "Board is not connected";
+
+        result = False
+        result_message = "Board is not connected";
         
         message = self.request.get('message')
         
@@ -132,25 +133,52 @@ class MessageHandler(webapp2.RequestHandler):
         if ct is not None:
             send_data = { "message": message }
             channel.send_message(boardname, json.dumps(send_data))
-            result = "Sent message successfully"
+            result = True
+            result_message = message
             CurrentMessage.setMessage(boardname, message)
 
-        json_data = { "result" : result }
+        json_data = { "result" : result,
+                      "message" : result_message
+                    }
 
-        self.response.content_type = "application/json"        
+        self.response.content_type = "application/json"
         json.dump(json_data, self.response.out)
 
 class ConsoleHandler(BaseHandler):
-    def get(self):
-        self.responseTemplate("console.html")
+    def get(self, boardname):
+        
+        if(boardname == '' ):
+            self.response.out.write('Board name is required.')
+            return;
 
-class MainHandler(BaseHandler):
-    def get(self):
-        self.responseTemplate("board.html")
+        message = ""
+
+        cm = CurrentMessage.getMessage(boardname)
+        if cm is not None:
+            message = cm.message
+        
+        template_values = {
+            "boardname": boardname,
+            "message": message
+        }
+        
+        self.responseTemplate("console.html", **template_values)
+
+class BoardHandler(BaseHandler):
+    def get(self, boardname):
+        if(boardname == '' ):
+            self.response.out.write('Board name is required.')
+            return;
+
+        template_values = {
+            "boardname": boardname
+        }
+        
+        self.responseTemplate("board.html", **template_values)
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler),
-    ('/console', ConsoleHandler),
+    ('/board/(.*)', BoardHandler),
+    ('/console/(.*)', ConsoleHandler),
     ('/message/(.*)', MessageHandler),
     ('/token/status/(.*)', TokenStatusHandler),
     ('/token/(.*)', TokenHandler),
